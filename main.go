@@ -1,6 +1,7 @@
 package main
 
 import (
+	"image"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -8,10 +9,11 @@ import (
 )
 
 var img *ebiten.Image
+var sourceImage image.Image
 
 func init() {
 	var err error
-	img, _, err = ebitenutil.NewImageFromFile("assets/hamster/idle.png")
+	img, sourceImage, err = ebitenutil.NewImageFromFile("assets/hamster/idle.png")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -23,9 +25,11 @@ func main() {
 
 	ebiten.SetWindowDecorated(false)
 	ebiten.SetWindowFloating(true)
+	ebiten.SetScreenClearedEveryFrame(false)
 
 	game := &Game{
-		img: img,
+		img:         img,
+		sourceImage: sourceImage,
 	}
 	options := &ebiten.RunGameOptions{
 		ScreenTransparent: true,
