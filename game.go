@@ -3,20 +3,25 @@ package main
 import (
 	"image"
 	"image/color"
+	"log"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 type Game struct {
-	assets        *Assets // Ассеты (очевидно же)
-	dragging      bool    // флаг смещения в текущий момент
-	dragOffsetX   int     // смещение мыши внутри спрайта при начале перетаскивания
-	dragOffsetY   int     //
-	drawn         bool    // статус отрисовки
-	menuOpen      bool    // статус меню
-	quitRequested bool    // нажали чтобы выйти
+	assets           *Assets   // Ассеты (очевидно же)
+	dragging         bool      // флаг смещения в текущий момент
+	dragOffsetX      int       // смещение мыши внутри спрайта при начале перетаскивания
+	dragOffsetY      int       //
+	drawn            bool      // статус отрисовки
+	menuOpen         bool      // статус меню
+	quitRequested    bool      // нажали чтобы выйти
+	memoryText       string    // данные о памяти
+	lastMemoryUpdate time.Time // последний timestamp получения памяти
 }
 
 const hamsterScale = 0.25
@@ -29,6 +34,18 @@ func (g *Game) Update() error {
 
 	g.updateDragging(mx, my)
 	g.updateMenu(mx, my)
+
+	if time.Since(g.lastMemoryUpdate) >= time.Second {
+		g.lastMemoryUpdate = time.Now()
+
+		memoryText, err := getMemoryUsage()
+		if err != nil {
+			log.Printf("обновление метрик памяти: %v", err)
+		} else {
+			g.memoryText = memoryText
+			g.drawn = false
+		}
+	}
 
 	if g.quitRequested {
 		return ebiten.Termination
@@ -51,6 +68,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	if g.menuOpen {
 		g.drawMenu(screen)
 	}
+
+	//пишем текст
+	ebitenutil.DebugPrintAt(screen,
+		g.memoryText, 10, 270)
+
 	g.drawn = true
 
 }

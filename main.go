@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -21,8 +22,18 @@ func main() {
 		log.Fatal(err)
 	}
 
+	memText, err := getMemoryUsage()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	timestmp := time.Now()
+
 	game := &Game{
-		assets: assets,
+		assets:           assets,
+		memoryText:       memText,
+		lastMemoryUpdate: timestmp,
 	}
 
 	options := &ebiten.RunGameOptions{
