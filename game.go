@@ -10,23 +10,30 @@ import (
 )
 
 type Game struct {
-	assets      *Assets // Ассеты (очевидно же)
-	dragging    bool    // флаг смещения в текущий момент
-	dragOffsetX int     // смещение мыши внутри спрайта при начале перетаскивания
-	dragOffsetY int     //
-	drawn       bool    // статус отрисовки
-	menuOpen    bool    // статус меню
+	assets        *Assets // Ассеты (очевидно же)
+	dragging      bool    // флаг смещения в текущий момент
+	dragOffsetX   int     // смещение мыши внутри спрайта при начале перетаскивания
+	dragOffsetY   int     //
+	drawn         bool    // статус отрисовки
+	menuOpen      bool    // статус меню
+	quitRequested bool    // нажали чтобы выйти
 }
 
 const hamsterScale = 0.25
 
 var closeButtonRect = image.Rect(340, 88, 372, 120)
+var redSquare = image.Rect(230, 100, 305, 120)
 
 func (g *Game) Update() error {
 	mx, my := ebiten.CursorPosition()
 
 	g.updateDragging(mx, my)
 	g.updateMenu(mx, my)
+
+	if g.quitRequested {
+		return ebiten.Termination
+	}
+
 	return nil
 }
 
@@ -94,6 +101,7 @@ func (g *Game) updateMenu(mx, my int) {
 		g.isHamsterAt(mx, my) {
 		g.menuOpen = !g.menuOpen
 		g.drawn = false
+		g.dragging = false
 	}
 
 	// кнопка закрытия
@@ -103,6 +111,13 @@ func (g *Game) updateMenu(mx, my int) {
 
 		g.menuOpen = false
 		g.drawn = false
+	}
+
+	// кнопка закрыть хомяка
+	if g.menuOpen &&
+		inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) &&
+		image.Pt(mx, my).In(redSquare) {
+		g.quitRequested = true
 	}
 }
 
@@ -114,4 +129,9 @@ func (g *Game) drawMenu(screen *ebiten.Image) {
 	options.GeoM.Scale(2, 2)
 	options.GeoM.Translate(340, 88)
 	screen.DrawImage(g.assets.CloseButton, &options)
+
+	vector.FillRect(screen,
+		float32(redSquare.Min.X), float32(redSquare.Min.Y),
+		float32(redSquare.Dx()), float32(redSquare.Dy()),
+		color.RGBA{R: 255, A: 255}, false)
 }
