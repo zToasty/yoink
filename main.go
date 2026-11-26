@@ -1,10 +1,12 @@
 package main
 
 import (
+	"image"
 	"log"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 func main() {
@@ -14,6 +16,12 @@ func main() {
 	ebiten.SetWindowDecorated(false)
 	ebiten.SetWindowFloating(true)
 	ebiten.SetScreenClearedEveryFrame(false)
+
+	icon, _, err := ebitenutil.NewImageFromFile("assets/icon_cheecks.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	ebiten.SetWindowIcon([]image.Image{icon})
 
 	// Загрузка ассетов
 	assets, err := loadAssets()
